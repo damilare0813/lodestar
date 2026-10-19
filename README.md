@@ -30,7 +30,7 @@ Lodestar is currently an early-stage, demo-ready project for the Stellar ecosyst
 - Some UX and onboarding flows are intentionally lightweight and may evolve as contributors shape the roadmap.
 
 ### Roadmap
-The short-term direction is to harden the core experience, improve documentation, and expand the set of supported payment and discovery flows. Follow the GitHub milestones for ongoing priorities: https://github.com/Stellar-Ecosystem/lodestar/milestones
+The short-term direction is to harden the core experience, improve documentation, and expand the set of supported payment and discovery flows. Follow the GitHub milestones for ongoing priorities: https://github.com/harshita4ever/lodestar/milestones
 
 ---
 
@@ -44,7 +44,7 @@ AI agents can already pay for services via the x402 protocol on Stellar. But the
 
 ## The Solution
 
-Lodestar is a Soroban smart contract that acts as a neutral, on-chain registry. Service providers call `register_service` once. AI agents call `list_services`, pick the best result by reputation, hit the endpoint, and pay via x402 — all without a single hardcoded URL. The registry is permanent and permissionless: no owner, no gatekeeping, no downtime.
+Lodestar's Service Registry is a Soroban smart contract that acts as a neutral, on-chain registry. Service providers call `register_service` once. AI agents call `list_services`, pick the best result by reputation, hit the endpoint, and pay via x402 — all without a single hardcoded URL. The registry is permanent and permissionless: no owner, no gatekeeping, no downtime.
 
 ---
 
@@ -110,7 +110,7 @@ backend, service, and agent-contract interactions.
 - **Smart Contract**: Rust + soroban-sdk on Stellar Testnet
 - **Backend**: Node.js v22 + Express (ES modules)
 - **Frontend**: Next.js 14 App Router + TypeScript + Tailwind CSS
-- **Payments**: x402 protocol (`@x402/express`, `@x402/fetch`, `@x402/stellar`)
+- **Payments**: x402 protocol (`@x402/core`, `@x402/express`, `@x402/stellar`)
 - **Stellar SDK**: `@stellar/stellar-sdk`
 - **Wallet**: Freighter (`@stellar/freighter-api`)
 
@@ -130,7 +130,7 @@ backend, service, and agent-contract interactions.
 ### 1. Clone
 
 ```sh
-git clone git@github.com:ritik4ever/lodestar.git
+git clone git@github.com:harshita4ever/lodestar.git
 cd lodestar
 ```
 
@@ -143,7 +143,7 @@ Follow [contract/DEPLOY.md](contract/DEPLOY.md) for full instructions.
 curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh
 
 # Add wasm target
-rustup target add wasm32-unknown-unknown
+rustup target add wasm32v1-none
 
 # Fund a deployer key
 stellar keys generate deployer --network testnet --fund
@@ -152,7 +152,7 @@ stellar keys generate deployer --network testnet --fund
 cd contract
 stellar contract build
 stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/lodestar_registry.wasm \
+  --wasm target/wasm32v1-none/release/lodestar_registry.wasm \
   --source deployer \
   --network testnet
 ```
@@ -164,7 +164,7 @@ Copy the printed contract ID — you will need it in the next steps.
 ```sh
 cd backend
 cp .env.example .env
-# Fill in CONTRACT_ID, SERVER_STELLAR_ADDRESS, SERVER_STELLAR_SECRET, BRAVE_API_KEY
+# Fill in CONTRACT_ID, AGENTS_CONTRACT_ID, FACILITATOR_URL, USDC_CONTRACT_ID
 npm install
 ```
 
@@ -302,7 +302,7 @@ The fix spans three layers:
 
 ### UI Features
 
-- **Page size selector**: choose 6, 12, or 24 agents per page directly from the header
+- **Page size selector**: choose 6, 12, or 20 agents per page directly from the header
 - **Prev / Next controls** with "Showing X–Y of Z" counter
 - **Sort by** Highest Score, Most Active, or Newest — resets to page 1 automatically on change
 - **Skeleton loading** on first load; opacity transition on page/sort changes
