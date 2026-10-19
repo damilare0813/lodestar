@@ -48,6 +48,10 @@ function parseTrustProxy(value) {
 
 const config = Object.freeze({
   nodeEnv: process.env.NODE_ENV ?? 'development',
+  // Demo-only safety gate. Demo scripts that fabricate reputation data
+  // (scripts/demo/boost-scores.js) must refuse to run unless DEMO_MODE=true,
+  // so an accidental run against a live deployment fails closed.
+  demoMode: process.env.DEMO_MODE === 'true',
   port: parseInt(process.env.PORT ?? '3001', 10),
   logLevel: process.env.LOG_LEVEL ?? 'info',
 
@@ -61,6 +65,14 @@ const config = Object.freeze({
   contract: {
     id: process.env.CONTRACT_ID,
     agentsId: process.env.AGENTS_CONTRACT_ID ?? null,
+    // Known non-demo deployment contract IDs; demo-only scripts must refuse
+    // to run against these even when DEMO_MODE=true.
+    knownNonDemoContractIds: Object.freeze(
+      (process.env.KNOWN_NON_DEMO_CONTRACT_IDS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
   },
 
   // Warn at startup if AGENTS_CONTRACT_ID is missing so operators spot it
@@ -131,6 +143,7 @@ const config = Object.freeze({
   },
 
   demoRun: {
+    cacheTtlSeconds: parsePositiveInt(process.env.DEMO_RUN_CACHE_TTL_SECONDS, 15, 'DEMO_RUN_CACHE_TTL_SECONDS'),
     pollMaxWaitMs: parsePositiveInt(process.env.DEMO_RUN_POLL_MAX_WAIT_MS, 8_000, 'DEMO_RUN_POLL_MAX_WAIT_MS'),
     pollInitialDelayMs: parsePositiveInt(process.env.DEMO_RUN_POLL_INITIAL_DELAY_MS, 250, 'DEMO_RUN_POLL_INITIAL_DELAY_MS'),
     pollMaxDelayMs: parsePositiveInt(process.env.DEMO_RUN_POLL_MAX_DELAY_MS, 2_000, 'DEMO_RUN_POLL_MAX_DELAY_MS'),
